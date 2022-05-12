@@ -26,32 +26,49 @@ public class Cuenta {
     this.movimientos = movimientos;
   }
 
-  public void poner(Double cuanto) {
-    if (cuanto <= 0) {
-      throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
+  public void verificarMontoNegativo(Double monto) {
+    if (monto <= 0) {
+      throw new MontoNegativoException(monto + ": el monto a ingresar debe ser un valor positivo");
     }
+  }
 
+  public void verificarMaximaCantidadDeDepositos() {
     if (getMovimientos().stream().filter(movimiento -> movimiento.isDeposito()).count() >= 3) {
       throw new MaximaCantidadDepositosException("Ya excedio los " + 3 + " depositos diarios");
     }
-    this.saldo += cuanto;
+  }
+
+  public void modificarSaldo(Double monto) {
+    this.saldo += monto;
+  }
+
+  public void poner(Double cuanto) {
+    verificarMontoNegativo(cuanto);
+    verificarMaximaCantidadDeDepositos();
+    modificarSaldo(cuanto);
     agregarMovimiento(new Movimiento(LocalDate.now(), cuanto, true));
   }
 
-  public void sacar(Double cuanto) {
-    if (cuanto <= 0) {
-      throw new MontoNegativoException(cuanto + ": el monto a ingresar debe ser un valor positivo");
-    }
-    if (getSaldo() - cuanto < 0) {
+  public void verificarSaldoMenorAlRetiro(Double monto) {
+    if (this.saldo - monto < 0) {
       throw new SaldoMenorException("No puede sacar mas de " + getSaldo() + " $");
     }
+  }
+
+  public void verificarLimiteDeDineroExtraidoHoy(Double monto) {
     Double montoExtraidoHoy = getMontoExtraidoA(LocalDate.now());
     Double limite = 1000 - montoExtraidoHoy;
-    if (cuanto > limite) {
+    if (monto > limite) {
       throw new MaximoExtraccionDiarioException("No puede extraer mas de $ " + 1000
           + " diarios, límite: " + limite);
     }
-    this.saldo -= cuanto;
+  }
+
+  public void sacar(Double cuanto) {
+    verificarMontoNegativo(cuanto);
+    verificarSaldoMenorAlRetiro(cuanto);
+    verificarLimiteDeDineroExtraidoHoy(cuanto);
+    modificarSaldo(cuanto * -1);
     agregarMovimiento(new Movimiento(LocalDate.now(), cuanto, false));
   }
 
