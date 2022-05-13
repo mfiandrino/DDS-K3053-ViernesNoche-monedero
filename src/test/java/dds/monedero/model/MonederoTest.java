@@ -65,8 +65,23 @@ public class MonederoTest {
   }
 
   @Test
+  public void Extraer() {
+    cuenta.setSaldo(5000.0);
+    cuenta.sacar(200.0);
+    cuenta.sacar(500.0);
+    assertEquals(4300, cuenta.getSaldo());
+  }
+
+  @Test
   public void ExtraerMontoNegativo() {
     assertThrows(MontoNegativoException.class, () -> cuenta.sacar(-500.0));
   }
 
+  @Test
+  public void GetLimiteRestante() {
+    cuenta.setSaldo(5000.0);
+    cuenta.sacar(200.0);
+    cuenta.sacar(500.0);
+    assertEquals(300, cuenta.getLimiteRestante());
+  }
 }
